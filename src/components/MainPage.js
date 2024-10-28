@@ -18,6 +18,12 @@ const MainPage = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        document.title = "Main Page";
+        const favicon = document.createElement('link');
+        favicon.rel = 'icon';
+        favicon.href = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" height="48" viewBox="0 0 576 512"><path d="M288 0l-288 288h72v224h144V352h96v160h144V288h72L288 0z"/></svg>';
+        document.head.appendChild(favicon);
+
         const fetchVideos = async () => {
             const token = localStorage.getItem('token');
             if (!token) {

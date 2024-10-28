@@ -20,6 +20,12 @@ const Profile = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        document.title = "Profile";
+        const favicon = document.createElement('link');
+        favicon.rel = 'icon';
+        favicon.href = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" height="48" viewBox="0 0 448 512"><path d="M224 256A128 128 0 1 0 96 128a128 128 0 0 0 128 128zm89.6 32h-16.7a174.7 174.7 0 0 1-145.8 0h-16.7A134.4 134.4 0 0 0 0 422.4v25.6A64 64 0 0 0 64 512h320a64 64 0 0 0 64-64v-25.6A134.4 134.4 0 0 0 313.6 288z"/></svg>';
+        document.head.appendChild(favicon);
+
         const fetchUserInfo = async () => {
             const token = localStorage.getItem('token');
             if (!token) {
@@ -177,10 +183,21 @@ const Profile = () => {
     };
 
     return (
-        <div className="profile-container">
-            <h2>Your Profile</h2>
-            <button className="back-button" onClick={() => navigate('/main')}>Back to Main Page</button> &nbsp;
+        <div>
+            <nav style={{position: 'fixed', 
+            width: '100%', 
+            backgroundColor: '#f8f8f8', 
+            padding: '8px', 
+            zIndex: 1000,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'}}>
             <button className="logout-button" onClick={handleLogout}>Logout</button>
+            <button className="back-button" onClick={() => navigate('/main')}>Back to Main Page</button>
+            </nav>                
+            <div className="profile-container">
+                <br></br>
+            <h2>Your Profile</h2>
             {userInfo ? (
                 <div className="profile-info">
                     <p><strong>Name:</strong> {userInfo.username}</p>
@@ -274,6 +291,8 @@ const Profile = () => {
                 ))}
             </ul>
         </div>
+        </div>
+
     );
 };
 

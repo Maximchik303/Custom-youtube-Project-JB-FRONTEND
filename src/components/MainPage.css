@@ -24,17 +24,17 @@ nav {
 }
 
 nav button, nav select {
-    background-color: rgb(208, 234, 245);
+    background-color: rgba(59, 255, 111, 0.266);
     border: none;
     color: #333333;
     padding: 8px 16px;
     margin: 0 5px;
-    border-radius: 4px;
+    border-radius: 10px;
     cursor: pointer;
 }
 
 nav button:hover, nav select:hover {
-    background-color: #c9d9e5;
+    background-color: #96ff94;
 }
 
 nav select {
@@ -107,14 +107,6 @@ li button:active {
     background-color: #6FE07F;
 }
 
-li button:disabled {
-    background-color: #617662;
-    border: none;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-}
 
 li button:disabled:hover {
     background-color: #000000;
@@ -134,20 +126,11 @@ li select {
 
 nav button:active, 
 nav select:active {
-    background-color: #aedfef;
-}
-
-button {
-    background-color: #007bff; /* Default button color */
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    background-color: #3be34cae;
 }
 
 button.liked {
-    background-color: #3c8034; /* Change this to your desired color when liked */
+    background-color: #3c8034; 
     color: white;
     border-radius: 8px;
 }

@@ -5,6 +5,7 @@
 This project is a web application that allows users to submit, like, and categorize YouTube videos directly pulled from YouTube. Users can create an account, log in, manage their liked videos, and for admins, add and edit categories and accept user submitted videos to be visible for everyone on the website. The point of the website is to submit and watch mildly interesting videos about many different topics from youtube, in an educational matter, without the need to search for something specific on youtube.
 The frontend is built with React, while the backend is developed using Django REST Framework.
 my linkdin - https://www.linkedin.com/in/maxim-voropaev-8080a632b/
+Docker of this project - https://hub.docker.com/r/maxim3003/mainproject
 
 ## Features
 

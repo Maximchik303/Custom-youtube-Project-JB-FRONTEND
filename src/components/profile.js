@@ -224,6 +224,10 @@ const Profile = () => {
             alignItems: 'center'}}>
             <button className="logout-button" onClick={handleLogout}>Logout</button>
             <button className="back-button" onClick={() => navigate('/main')}>Back to Main Page</button>
+            {isAdmin && (
+            <button className="back-button" onClick={() => navigate('/users')}>Users list</button>
+            )}
+
             </nav>                
             <div className="profile-container">
                 <br></br>

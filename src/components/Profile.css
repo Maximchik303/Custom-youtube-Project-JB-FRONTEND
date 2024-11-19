@@ -228,3 +228,22 @@ nav {
     z-index: 1000;
     box-shadow: 0 4px 8px rgba(83, 223, 76, 0.1);
 }
+
+.Submitbutton {
+    padding: 10px 20px;
+    background-color: #25823b;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.5s ease;
+}
+
+.Submitbutton:hover {
+    background-color: #289840;
+}
+
+.Submitbutton:active {
+    background-color: #3eaf5a; 
+}

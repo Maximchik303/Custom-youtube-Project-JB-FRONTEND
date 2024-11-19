@@ -15,6 +15,7 @@ const MainPage = () => {
     const [filterStatus, setFilterStatus] = useState('all');
     const [sortOrder, setSortOrder] = useState('newest');
     const [likedVideos, setLikedVideos] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -308,6 +309,11 @@ const MainPage = () => {
         }
     };
 
+    const filteredVideos = videos.filter((video) =>
+        video.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    
+
     return (
         <div>
             <br />
@@ -326,6 +332,14 @@ const MainPage = () => {
                         </option>
                     ))}
                 </select>
+                <input
+    type="text"
+    placeholder="Search by title"
+    value={searchQuery}
+    onChange={(e) => setSearchQuery(e.target.value)}
+    style={{ borderRadius: '8px' , border : '1px solid, green'}}
+/>
+
                 <select onChange={handleSortOrderChange} value={sortOrder} style={{ marginLeft: '10px' }}>
                     <option value="newest">Newest First</option>
                     <option value="oldest">Oldest First</option>
@@ -342,9 +356,9 @@ const MainPage = () => {
 
             <div style={{ marginTop: '30px' }}>
                 <h3>&nbsp; Submitted Videos</h3>
-                <p>&nbsp;&nbsp;&nbsp;&nbsp; Number of videos: {videos.length}</p>
+                <p>&nbsp;&nbsp;&nbsp;&nbsp; Number of videos: {filteredVideos.length}</p>
                 <ul>
-    {sortVideos(videos, sortOrder).map((video) => (
+    {sortVideos(filteredVideos, sortOrder).map((video) => (
         <li key={video.id}>
             <a href={video.link} target="_blank" rel="noopener noreferrer">
                 <img src={video.thumbnail} alt={video.title} style={{ width: '120px', marginRight: '10px' }} />

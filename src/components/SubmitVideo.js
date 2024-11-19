@@ -96,14 +96,25 @@ const SubmitVideo = () => {
                                 </select>
                             </div>
                             <button type="submit" className="btngreen btn-primary w-100 shadow" style={{ borderRadius: '10px', fontSize: '1.1rem', padding: '10px 0', transition: 'background-color 0.3s' }}>Submit</button>
-                            <button 
-                                type="button" 
-                                onClick={() => navigate('/main')} 
-                                className="btn btn-secondary w-100 shadow mt-3" 
-                                style={{ borderRadius: '10px', fontSize: '1.1rem', padding: '10px 0', transition: 'background-color 0.3s' }}
-                            >
-                                Back to Main Page
-                            </button>
+                            <div className="d-flex justify-content-between mt-3">
+    <button 
+        type="button" 
+        onClick={() => navigate('/main')} 
+        className="btn btn-secondary shadow" 
+        style={{ borderRadius: '10px', fontSize: '1.1rem', padding: '10px 0', width: '48%', transition: 'background-color 0.3s' }}
+    >
+        Enter Main Page
+    </button>
+    <button 
+        type="button" 
+        onClick={() => navigate('/profile')} 
+        className="btn btn-secondary shadow" 
+        style={{ borderRadius: '10px', fontSize: '1.1rem', padding: '10px 0', width: '48%', transition: 'background-color 0.3s' }}
+    >
+        Enter Profile
+    </button>
+</div>
+
                         </form>
                     </div>
                 </div>

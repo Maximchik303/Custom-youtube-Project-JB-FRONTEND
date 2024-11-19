@@ -17,6 +17,7 @@ const Profile = () => {
     const [showCategories, setShowCategories] = useState(false);
     const [categories, setCategories] = useState([]);
     const [editCategory, setEditCategory] = useState({});
+    const [uploadedVideos, setUploadedVideos] = useState([]);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -64,6 +65,35 @@ const Profile = () => {
         };
 
         fetchUserInfo();
+    }, [navigate]);
+
+    useEffect(() => {
+        const fetchUploadedVideos = async () => {
+            const token = localStorage.getItem('token');
+            try {
+                const response = await axios.get('http://127.0.0.1:8000/api/user-videos/', {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+    
+                const videosWithDetails = await Promise.all(
+                    response.data.map(async (video) => {
+                        const videoId = getYoutubeVideoId(video.link);
+                        const videoDetails = await fetchYouTubeDetails(videoId);
+                        return {
+                            ...video,
+                            title: videoDetails.title,
+                            thumbnail: videoDetails.thumbnail_url,
+                        };
+                    })
+                );
+    
+                setUploadedVideos(videosWithDetails);
+            } catch (error) {
+                console.error('Error fetching uploaded videos:', error);
+            }
+        };
+    
+        fetchUploadedVideos();
     }, [navigate]);
 
     const getYoutubeVideoId = (url) => {
@@ -279,6 +309,24 @@ const Profile = () => {
                 <p>Loading...</p>
             )}
 
+<h3>Uploaded Videos:</h3>
+{uploadedVideos.length > 0 ? (
+    <ul className="liked-videos">
+        {uploadedVideos.map((video) => (
+            <li key={video.id} className="liked-video-item">
+                <a href={video.link} target="_blank" rel="noopener noreferrer">
+                    <img src={video.thumbnail} alt={video.title} className="video-thumbnail" />
+                    {video.title}
+                </a>
+            </li>
+        ))}
+    </ul>
+) : (
+    <div>
+        <p>You never submitted a video, why not do it now?</p>
+        <button className="Submitbutton" onClick={() => navigate('/submit-video')}>Submit Video</button>
+    </div>
+)}
             <h3>Liked Videos:</h3>
             <ul className="liked-videos">
                 {likedVideos.map(video => (

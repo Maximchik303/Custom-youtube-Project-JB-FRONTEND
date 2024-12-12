@@ -1,0 +1,120 @@
+/* General Layout */
+.container {
+    font-family: 'Arial', sans-serif;
+    color: #333;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+  }
+  
+  /* Hero Section */
+  .hero {
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    color: white;
+    padding: 30px 20px;
+  }
+  
+  .title {
+    font-size: 2.5rem;
+    margin: 0;
+  }
+  
+  .subtitle {
+    font-size: 1.2rem;
+    margin-top: 10px;
+  }
+  
+  /* Content Section */
+  .content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 40px 20px;
+  }
+  
+  .card {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  
+  .card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
+  
+  .card h2 {
+    margin-top: 0;
+    font-size: 1.5rem;
+    color: #2575fc;
+  }
+  
+  .card p,
+  .card ul {
+    font-size: 1rem;
+    color: #555;
+  }
+  
+  .card ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .card ul li {
+    margin-bottom: 5px;
+  }
+  
+  /* Footer */
+  .footer {
+    background: #7e7e7e;
+    color: white;
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+  
+  .footer p {
+    margin: 0;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 600px) {
+    .title {
+      font-size: 2rem;
+    }
+  
+    .subtitle {
+      font-size: 1rem;
+    }
+  }
+  
+  .topNav {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    gap: 10px;
+  }
+
+  .navButton {
+    background-color: #4325c5;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .navButton:hover {
+    background-color: #3721a3;
+  }
+  
+  .navButton:active {
+    background-color: #322680; /* Blueish-purple */
+    transform: scale(0.95); /* Optional: adds a slight "pressed" effect */
+  }
+  

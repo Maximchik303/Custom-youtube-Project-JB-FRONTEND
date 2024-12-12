@@ -140,13 +140,6 @@ button:hover {
     margin-top: 10px;
 }
 
-.liked-videos {
-    display: flex;
-    flex-wrap: wrap;
-    list-style: none;
-    padding: 0;
-    gap: 20px;
-}
 
 .liked-video-item {
     display: flex;
@@ -246,4 +239,39 @@ nav {
 
 .Submitbutton:active {
     background-color: #3eaf5a; 
+}
+
+.video-status {
+    display: inline-block;
+    padding: 5px 10px;
+    font-size: 14px;
+    border-radius: 3px;
+    margin-top: 5px;
+}
+
+.video-status.approved {
+    background-color: green;
+    color: white;
+}
+
+.video-status.denied {
+    background-color: red;
+    color: white;
+}
+
+.video-status.pending {
+    background-color: orange;
+    color: white;
+}
+
+.liked-videos {
+    display: flex;            /* Display items in a row */
+    overflow-x: auto;         /* Enable horizontal scrolling */
+    max-width: 100%;          /* Ensure the container takes up available width */
+    padding-bottom: 10px;     /* Optional: Add some padding to avoid the scrollbar touching the edge */
+}
+
+.liked-video-item {
+    flex-shrink: 0;           /* Prevent the items from shrinking */
+    margin-right: 15px;       /* Space between items, adjust as needed */
 }

@@ -138,3 +138,36 @@ button.liked {
 button.liked:hover {
     background-color: #b70b36;
 }
+
+/* Container for buttons to space them across the screen */
+.button-container {
+    display: flex;
+    justify-content: space-between;  /* Distributes buttons evenly */
+    gap: 20px;                      /* Adds space between buttons */
+    padding: 0 30px;                 /* Adds space on left and right of the container */
+    width: 100%;                    /* Ensures buttons take up the full width of the container */
+    box-sizing: border-box;         /* Ensures padding is included in the width calculation */
+    margin: 20px 0;                 /* Adds space above and below the buttons */
+}
+
+/* Styling for individual buttons */
+.styled-button {
+    padding: 10px 20px;             /* Adds padding inside the button */
+    background-color: #4CAF50;      /* Green background color */
+    color: white;                   /* White text color */
+    border: none;                   /* No border */
+    border-radius: 5px;             /* Rounded corners */
+    font-size: 16px;                /* Font size */
+    cursor: pointer;                /* Changes the cursor to a pointer on hover */
+    transition: background-color 0.3s ease;  /* Smooth transitions for background color */
+}
+
+/* Hover effect for buttons */
+.styled-button:hover {
+    background-color: #45a049;      /* Darker green on hover */
+}
+
+/* Optional: Active state to show feedback when clicked */
+.styled-button:active {
+    background-color: #3e8e41;      /* Even darker green when clicked */
+}

@@ -18,12 +18,16 @@ const Profile = () => {
     const [categories, setCategories] = useState([]);
     const [editCategory, setEditCategory] = useState({});
     const [uploadedVideos, setUploadedVideos] = useState([]);
+    const [isAboutOpen, setIsAboutOpen] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
         document.title = "Profile";
-        const favicon = document.createElement('link');
-        favicon.rel = 'icon';
+        const existingFavicon = document.querySelector('link[rel="icon"]');
+        if (existingFavicon) {
+            document.head.removeChild(existingFavicon);
+        }
+        const favicon = document.createElement('link');        favicon.rel = 'icon';
         favicon.href = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" height="48" viewBox="0 0 448 512"><path d="M224 256A128 128 0 1 0 96 128a128 128 0 0 0 128 128zm89.6 32h-16.7a174.7 174.7 0 0 1-145.8 0h-16.7A134.4 134.4 0 0 0 0 422.4v25.6A64 64 0 0 0 64 512h320a64 64 0 0 0 64-64v-25.6A134.4 134.4 0 0 0 313.6 288z"/></svg>';
         document.head.appendChild(favicon);
 
@@ -227,7 +231,50 @@ const Profile = () => {
             {isAdmin && (
             <button className="back-button" onClick={() => navigate('/users')}>Users list</button>
             )}
-
+<div
+                className="about-bubble"
+                style={{
+                    position: 'fixed',
+                    top: '5px',
+                    right: '10px',
+                    width: isAboutOpen ? '400px' : '50px',
+                    height: isAboutOpen ? '280px' : '50px',
+                    borderRadius: '25px',
+                    backgroundColor: '#007bff',
+                    color: '#fff',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.3s ease-in-out',
+                    padding: isAboutOpen ? '15px' : '0',
+                    overflow: isAboutOpen ? 'auto' : 'hidden',
+                    zIndex: 1000,
+                }}
+                onClick={() => setIsAboutOpen(!isAboutOpen)}
+            >
+                {isAboutOpen ? (
+                    <div>
+                        <p style={{ fontSize: '0.9rem', marginTop: '5px' }}>
+                        The main point of the website is to have a selection of the best and useful youtube videos to watch instead of having to scroll on youtube trying to find the perfect video for hours. or suggest you youtube videos on its own
+                        </p>
+                        <p style={{ fontSize: '0.8rem', marginTop: '5px' }}>
+                        This is your profile page where you can change your password, see which videos you submitted and which videos you liked.
+                        </p>
+                        <p style={{ fontSize: '0.8rem', marginTop: '5px' }}>
+                        To submit a video go to the main page and choose the "submit video" button or{' '}
+                            <span 
+                            onClick={() => navigate('/submit-video')} 
+                            style={{ color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}>
+                            press here
+                            </span>.
+                        </p>
+                    </div>
+                ) : (
+                    <span style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>?</span>
+                )}
+            </div>
             </nav>                
             <div className="profile-container">
                 <br></br>
@@ -322,6 +369,9 @@ const Profile = () => {
                     <img src={video.thumbnail} alt={video.title} className="video-thumbnail" />
                     {video.title}
                 </a>
+                <div className={`video-status ${video.approved ? 'approved' : video.denied ? 'denied' : 'pending'}`}>
+                    {video.approved ? 'Approved' : video.denied ? 'Denied' : 'Not Yet Approved'}
+                </div>
             </li>
         ))}
     </ul>
@@ -331,6 +381,8 @@ const Profile = () => {
         <button className="Submitbutton" onClick={() => navigate('/submit-video')}>Submit Video</button>
     </div>
 )}
+
+
             <h3>Liked Videos:</h3>
             <ul className="liked-videos">
                 {likedVideos.map(video => (

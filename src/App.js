@@ -6,6 +6,7 @@ import MainPage from './components/MainPage';
 import SubmitVideo from './components/SubmitVideo';
 import Profile from './components/profile';
 import Users from './components/Users';
+import About from './components/About';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
@@ -19,7 +20,7 @@ const App = () => {
                 <Route path="/submit-video" element={<SubmitVideo />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/users" element={<Users />} />
-
+                <Route path="/about" element={<About />} />
             </Routes>
         </Router>
     );

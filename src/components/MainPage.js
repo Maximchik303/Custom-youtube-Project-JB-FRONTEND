@@ -9,19 +9,32 @@ import './MainPage.css';
 const MainPage = () => {
     const [videos, setVideos] = useState([]);
     const [categories, setCategories] = useState([]);
-    const [selectedCategory, setSelectedCategory] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState([]);
     const [userName, setUserName] = useState('');
     const [isAdmin, setIsAdmin] = useState(false);
     const [filterStatus, setFilterStatus] = useState('all');
     const [sortOrder, setSortOrder] = useState('newest');
     const [likedVideos, setLikedVideos] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [view, setView] = useState('submitted');
+    const [popularVideos, setPopularVideos] = useState([]);
+    const [popularVideosAlways, setPopularVideosAlways] = useState([]);
+    const [recommendedVideos, setRecommendedVideos] = useState([]);
+    const [noVideosMessage, setNoVideosMessage] = useState('');
+    const [favoriteCategory, setFavoriteCategory] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
+        setSelectedCategory('');
+    }, [view]);
+
+    useEffect(() => {
         document.title = "Main Page";
-        const favicon = document.createElement('link');
-        favicon.rel = 'icon';
+        const existingFavicon = document.querySelector('link[rel="icon"]');
+        if (existingFavicon) {
+            document.head.removeChild(existingFavicon);
+        }
+        const favicon = document.createElement('link');        favicon.rel = 'icon';
         favicon.href = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" height="48" viewBox="0 0 576 512"><path d="M288 0l-288 288h72v224h144V352h96v160h144V288h72L288 0z"/></svg>';
         document.head.appendChild(favicon);
 
@@ -75,6 +88,7 @@ const MainPage = () => {
                 console.error('Failed to fetch categories:', error);
             }
         };
+
         const fetchLikedVideos = async () => {
             const token = localStorage.getItem('token');
             if (!token) {
@@ -106,12 +120,62 @@ const MainPage = () => {
                 console.error('Error fetching liked videos:', error);
             }
         };
-    
-        fetchVideos();
-        fetchCategories();
-        fetchLikedVideos();
 
-    }, [navigate, filterStatus]);
+        const fetchPopularVideos = async () => {
+            try {
+                const response = await fetch("http://127.0.0.1:8000/api/popular-videos/");
+                const data = await response.json();
+                setPopularVideos(data.videos);
+                setPopularVideosAlways(data.videos)
+            } catch (error) {
+                console.error("Error fetching popular videos:", error);
+            }
+        };
+
+        const fetchRecommendedVideos = async () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate('/');
+                return;
+            }
+        
+            const decodedToken = jwtDecode(token);
+            setUserName(decodedToken.username || 'User');
+            setIsAdmin(decodedToken.is_staff);
+        
+            try {
+                const response = await axios.get('http://127.0.0.1:8000/api/recommend-videos/', {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+        
+                // Get the favorite category from the response
+                const favoriteCategory = response.data.favorite_category;
+                setFavoriteCategory(favoriteCategory); // Save the favorite category in state (add this state)
+        
+                const recommendedVideosWithDetails = await Promise.all(response.data.recommended_videos.map(async (video) => {
+                    const videoId = getYoutubeVideoId(video.link);
+                    const videoDetails = await fetchYouTubeDetails(videoId);
+                    return {
+                        ...video,
+                        title: videoDetails.title,
+                        thumbnail: videoDetails.thumbnail_url,
+                    };
+                }));
+        
+                setRecommendedVideos(recommendedVideosWithDetails);
+            } catch (error) {
+                console.error('Failed to fetch recommended videos:', error);
+            }
+        };
+        
+    
+            fetchVideos();
+            fetchCategories();
+            fetchLikedVideos();
+            fetchPopularVideos(); 
+            fetchRecommendedVideos();
+
+    }, [navigate, filterStatus, view]);
 
     
 
@@ -120,7 +184,6 @@ const MainPage = () => {
         return urlObj.searchParams.get('v');
     };
 
-    // Function to fetch YouTube video details using oEmbed
     const fetchYouTubeDetails = async (videoId) => {
         try {
             const response = await axios.get(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
@@ -137,21 +200,25 @@ const MainPage = () => {
     };
 
     const handleCategoryChange = async (categoryId) => {
-        setSelectedCategory(categoryId);
+        setSelectedCategory(categoryId);  // Store the selected category as a scalar value
+    
         const token = localStorage.getItem('token');
         try {
+            // Prepare the filter based on selected category and filter status
             let filter = '';
+    
             if (filterStatus === 'approved') {
-                filter = `?approved=true&denied=false&category=${categoryId}`;
+                filter = `?approved=true&denied=false&category_1=${categoryId}`;
             } else if (filterStatus === 'not_approved') {
-                filter = `?approved=false&denied=false&category=${categoryId}`;
+                filter = `?approved=false&denied=false&category_1=${categoryId}`;
             } else {
-                filter = `?category=${categoryId}`;
+                filter = categoryId ? `?category_1=${categoryId}` : '';  // Only add category if selected
             }
     
             const response = await axios.get(`http://127.0.0.1:8000/videos/${filter}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
+    
             const videosWithDetails = await Promise.all(response.data.map(async (video) => {
                 const videoId = getYoutubeVideoId(video.link);
                 const videoDetails = await fetchYouTubeDetails(videoId);
@@ -161,13 +228,41 @@ const MainPage = () => {
                     thumbnail: videoDetails.thumbnail_url,
                 };
             }));
-            
+    
             setVideos(videosWithDetails);
+
         } catch (error) {
             console.error('Failed to fetch videos by category:', error);
         }
     };
+
+    const handleCategoryChangePopular = async (categoryId) => {
+        setSelectedCategory(categoryId); // Store the selected category ID
     
+        try {
+            // Filter videos based on selected category
+            const filteredVideos = popularVideosAlways.filter(video => {
+                console.log('categoryId to filter by:', categoryId);
+                return categoryId ? Number(video.categoryId) === Number(categoryId) : true;
+            });
+    
+            if (filteredVideos.length === 0) {
+                // If no videos are found, display a message
+                setPopularVideos([]);  // Clear the videos array
+                setNoVideosMessage('No popular videos right now with this category on YouTube.');
+            } else {
+                // Update the state with filtered videos
+                setPopularVideos(filteredVideos); 
+                setNoVideosMessage(''); // Clear "no videos" message
+            }
+    
+            // Log the filtered data directly
+            console.log("Filtered videos:", filteredVideos);
+        } catch (error) {
+            console.error('Failed to fetch popular videos by category:', error);
+            setNoVideosMessage('Failed to fetch videos. Please try again later.');
+        }
+    };
 
     const handleLike = async (videoId) => {
         const token = localStorage.getItem('token');
@@ -182,6 +277,11 @@ const MainPage = () => {
             );
             const newLikedVideo = { id: videoId };  
             setLikedVideos((prevLikedVideos) => [...prevLikedVideos, newLikedVideo]);
+            setRecommendedVideos((prevRecommendedVideos) =>
+                prevRecommendedVideos.map((video) =>
+                    video.id === videoId ? { ...video, likes: video.likes + 1 } : video
+                )
+            );
         } catch (error) {
             console.error('Error liking video:', error.response?.data?.detail || error.message);
         }
@@ -200,6 +300,11 @@ const MainPage = () => {
             );
             setLikedVideos((prevLikedVideos) =>
                 prevLikedVideos.filter(likedVideo => likedVideo.id !== videoId)
+            );
+            setRecommendedVideos((prevRecommendedVideos) =>
+                prevRecommendedVideos.map((video) =>
+                    video.id === videoId ? { ...video, likes: video.likes - 1 } : video
+                )
             );
         } catch (error) {
             console.error('Error unliking video:', error.response?.data?.detail || error.message);
@@ -291,23 +396,33 @@ const MainPage = () => {
         });
     };
 
+    const sortVideos2 = (videos, order) => {
+        return videos.sort((a, b) => {
+            if (order === 'desc') {
+                return b.likes - a.likes; // Sort by likes in descending order
+            } else {
+                return a.likes - b.likes; // Sort by likes in ascending order
+            }
+        });
+    };
 
-    const handleCategoryChangeForVideo = async (videoId, newCategoryId) => {
+    const handleCategoryChangeForVideo = async (videoId, newCategoryIds) => {
         const token = localStorage.getItem('token');
         try {
-            await axios.patch(`http://127.0.0.1:8000/videos/${videoId}/`, { category: newCategoryId }, {
+            await axios.patch(`http://127.0.0.1:8000/videos/${videoId}/`, { categories: newCategoryIds }, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-
+    
             setVideos((prevVideos) =>
                 prevVideos.map((video) =>
-                    video.id === videoId ? { ...video, category: newCategoryId } : video
+                    video.id === videoId ? { ...video, categories: newCategoryIds } : video
                 )
             );
         } catch (error) {
-            console.error('Failed to update video category:', error.response?.data?.detail || error.message);
+            console.error('Failed to update video categories:', error.response?.data?.detail || error.message);
         }
     };
+    
 
     const filteredVideos = videos.filter((video) =>
         video.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -324,67 +439,190 @@ const MainPage = () => {
                 <button onClick={handleLogout}>Logout</button>
                 <button onClick={() => navigate('/submit-video')}>Submit Video</button>
                 <button onClick={() => navigate('/profile')}>Profile</button>
-                <select onChange={(e) => handleCategoryChange(e.target.value)} value={selectedCategory}>
-                    <option value="">All Categories</option>
-                    {categories.map((category) => (
-                        <option key={category.id} value={category.id}>
-                            {category.name}
-                        </option>
-                    ))}
-                </select>
+                {(view === 'submitted' || view === 'popular') && (
+    <>
+
+                <select
+        onChange={(e) => {
+            // Call the appropriate handler based on the view
+            if (view === 'popular') {
+                handleCategoryChangePopular(e.target.value);  // Use the popular view handler
+            } else {
+                handleCategoryChange(e.target.value);  // Use the regular view handler
+            }
+        }}
+        value={selectedCategory}  // Ensure this is a scalar value (string or number)
+    >
+        <option value="">All Categories</option>
+        {categories.map((category) => (
+            <option key={category.id} value={category.id}>
+                {category.name}
+            </option>
+        ))}
+    </select>
+    </>
+)}
+    {view === 'submitted' && (
+    <>
                 <input
-    type="text"
-    placeholder="Search by title"
-    value={searchQuery}
-    onChange={(e) => setSearchQuery(e.target.value)}
-    style={{ borderRadius: '8px' , border : '1px solid, green'}}
-/>
+                    type="text"
+                    placeholder="Search by title"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    style={{ borderRadius: '8px', border: '1px solid green' }}
+                />
 
                 <select onChange={handleSortOrderChange} value={sortOrder} style={{ marginLeft: '10px' }}>
                     <option value="newest">Newest First</option>
                     <option value="oldest">Oldest First</option>
                 </select>
-            {isAdmin && (
-                <select onChange={(e) => setFilterStatus(e.target.value)} value={filterStatus} style={{ marginLeft: '10px' }}>
-                  <option value="all">All</option>
-                 <option value="approved">Approved</option>
-                 <option value="not_approved">Not Approved</option>
-                 <option value="denied">Denied</option>
-             </select>
-            )}
+                {isAdmin && (
+                    <select onChange={(e) => setFilterStatus(e.target.value)} value={filterStatus} style={{ marginLeft: '10px' }}>
+                        <option value="all">All</option>
+                        <option value="approved">Approved</option>
+                        <option value="not_approved">Not Approved</option>
+                        <option value="denied">Denied</option>
+                    </select>
+                )}
+                    </>
+)}
             </nav>
-
+    
             <div style={{ marginTop: '30px' }}>
-                <h3>&nbsp; Submitted Videos</h3>
-                <p>&nbsp;&nbsp;&nbsp;&nbsp; Number of videos: {filteredVideos.length}</p>
+                <h3>
+                    <div className="button-container">
+                        <button className="styled-button" onClick={() => setView('submitted')}>
+                            Submitted Videos
+                        </button>
+                        <button className="styled-button" onClick={() => setView('popular')}>
+                            Popular Today On Youtube
+                        </button>
+                        <button className="styled-button" onClick={() => setView('recommended')}>
+                            Recommended For You
+                        </button>
+                    </div>
+                </h3>
                 <ul>
-    {sortVideos(filteredVideos, sortOrder).map((video) => (
+                    {view === 'submitted' &&
+                        sortVideos(filteredVideos, sortOrder).map((video) => (
+                            <li key={video.id}>
+                                <a href={video.link} target="_blank" rel="noopener noreferrer">
+                                    <img src={video.thumbnail} alt={video.title} style={{ width: '120px', marginRight: '10px' }} />
+                                    <strong>{video.title}</strong>
+                                </a>{' '}
+                                <strong>Description:</strong> {video.description}
+                                <br />
+                                <strong>Categories:</strong> {video.categories?.map((categoryId) => categoryMap[categoryId]).join(', ')} <br />
+                                {isAdmin && (
+                                    <>
+                                        <select
+                                            multiple
+                                            onChange={(e) => handleCategoryChangeForVideo(video.id, Array.from(e.target.selectedOptions, option => option.value))}
+                                            value={video.categories}
+                                            style={{ width: '15%', whiteSpace: 'normal', wordWrap: 'break-word', overflowWrap: 'break-word' }}
+                                        >
+                                            {categories.map((category) => (
+                                                <option key={category.id} value={category.id}>
+                                                    {category.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </>
+                                )}
+                                <strong>Uploaded here by:</strong> {video.user} <br />
+                                <strong>Uploaded here on:</strong> {new Date(video.createdTime).toLocaleString()} <br />
+                                <strong className="likes-count">Likes:</strong> <span>{video.likes}</span>
+                                {isAdmin ? (
+                                    video.approved ? (
+                                        <>
+                                            <span style={{ color: 'green' }}> - Approved</span>
+                                            <button onClick={() => handleUnapproveVideo(video.id)}>Unapprove</button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            {video.denied ? (
+                                                <>
+                                                    <span style={{ color: 'red' }}> - Denied</span>
+                                                    <button onClick={() => handleUndenyVideo(video.id)}>Undeny</button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <span style={{ color: 'red' }}> - Not Approved</span>
+                                                    <button onClick={() => handleApproveVideo(video.id)}>Approve</button>
+                                                    <button onClick={() => handleDenyVideo(video.id)}>Deny</button>
+                                                </>
+                                            )}
+                                        </>
+                                    )
+                                ) : null}
+                                <button
+                                    onClick={() =>
+                                        likedVideos.some((likedVideo) => likedVideo.id === video.id)
+                                            ? handleUnlike(video.id)
+                                            : handleLike(video.id)
+                                    }
+                                    className={likedVideos.some((likedVideo) => likedVideo.id === video.id) ? 'liked' : ''}
+                                >
+                                    {likedVideos.some((likedVideo) => likedVideo.id === video.id) ? 'Unlike' : 'Like'}
+                                </button>
+                            </li>
+                        ))}
+{view === 'popular' && (
+    <ul>
+        {popularVideos && popularVideos.length > 0 ? (
+            popularVideos.map((video) => (
+                <li key={video.id}>
+                    <a href={`https://www.youtube.com/watch?v=${video.id}`} target="_blank" rel="noopener noreferrer">
+                        <img src={video.thumbnail} alt={video.title} style={{ width: '120px', marginRight: '10px' }} />
+                        <strong>{video.title}</strong>
+                    </a>
+                    <p>{video.description}</p>
+                    <p>Channel: {video.channelTitle}</p>
+                    <p>Published: {new Date(video.publishedAt).toLocaleString()}</p>
+                    <p>Category: {video.category || "Error"}</p>
+                </li>
+            ))
+        ) : (
+            <p>{noVideosMessage || "Popular videos loading..."}</p>
+        )}
+    </ul>
+)}
+
+
+{view === 'recommended' &&
+    sortVideos2(recommendedVideos.filter((video) => video.approved), 'desc').map((video) => (
         <li key={video.id}>
             <a href={video.link} target="_blank" rel="noopener noreferrer">
                 <img src={video.thumbnail} alt={video.title} style={{ width: '120px', marginRight: '10px' }} />
                 <strong>{video.title}</strong>
-            </a> <strong>Description:</strong> {video.description}
+            </a>{' '}
+            <strong>Description:</strong> {video.description}
             <br />
-            <strong>Category:</strong> {categoryMap[video.category]} <br />
+            <strong>Categories:</strong> {video.categories?.map((categoryId) => categoryMap[categoryId]).join(', ')} <br />
             {isAdmin && (
-                                <>
-                                    <select onChange={(e) => handleCategoryChangeForVideo(video.id, e.target.value)} value={video.category}>
-                                        {categories.map((category) => (
-                                            <option key={category.id} value={category.id}>
-                                                {category.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </>
-                            )}
+                <>
+                    <select
+                        multiple
+                        onChange={(e) => handleCategoryChangeForVideo(video.id, Array.from(e.target.selectedOptions, option => option.value))}
+                        value={video.categories}
+                        style={{ width: '15%', whiteSpace: 'normal', wordWrap: 'break-word', overflowWrap: 'break-word' }}
+                    >
+                        {categories.map((category) => (
+                            <option key={category.id} value={category.id}>
+                                {category.name}
+                            </option>
+                        ))}
+                    </select>
+                </>
+            )}
             <strong>Uploaded here by:</strong> {video.user} <br />
             <strong>Uploaded here on:</strong> {new Date(video.createdTime).toLocaleString()} <br />
             <strong className="likes-count">Likes:</strong> <span>{video.likes}</span>
             {isAdmin ? (
                 video.approved ? (
                     <>
-                    <span style={{ color: 'green' }}> - Approved</span>
-                    <button onClick={() => handleUnapproveVideo(video.id)}>Unapprove</button>
+                        <span style={{ color: 'green' }}> - Approved</span>
+                        <button onClick={() => handleUnapproveVideo(video.id)}>Unapprove</button>
                     </>
                 ) : (
                     <>
@@ -403,22 +641,25 @@ const MainPage = () => {
                     </>
                 )
             ) : null}
-<button
-    onClick={() => likedVideos.some(likedVideo => likedVideo.id === video.id) 
-        ? handleUnlike(video.id) 
-        : handleLike(video.id)}
-    className={likedVideos.some(likedVideo => likedVideo.id === video.id) ? 'liked' : ''}
->
-    {likedVideos.some(likedVideo => likedVideo.id === video.id) ? 'Unlike' : 'Like'}
-</button>
-
-                    </li>
+            <button
+                onClick={() =>
+                    likedVideos.some((likedVideo) => likedVideo.id === video.id)
+                        ? handleUnlike(video.id)
+                        : handleLike(video.id)
+                }
+                className={likedVideos.some((likedVideo) => likedVideo.id === video.id) ? 'liked' : ''}
+            >
+                {likedVideos.some((likedVideo) => likedVideo.id === video.id) ? 'Unlike' : 'Like'}
+            </button>
+        </li>
     ))}
-</ul>
 
+                </ul>
             </div>
+
         </div>
     );
-};
+    
+    };
 
-export default MainPage;
+    export default MainPage;

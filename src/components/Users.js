@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
@@ -14,6 +14,14 @@ const Users = () => {
 
     useEffect(() => {
         document.title = "Users";
+        const existingFavicon = document.querySelector('link[rel="icon"]');
+        if (existingFavicon) {
+            document.head.removeChild(existingFavicon);
+        }
+        const favicon = document.createElement('link');
+        favicon.rel = 'icon';
+        favicon.href = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" height="48" viewBox="0 0 448 512"><path d="M224 256A128 128 0 1 0 96 128a128 128 0 0 0 128 128zm89.6 32h-16.7a174.7 174.7 0 0 1-145.8 0h-16.7A134.4 134.4 0 0 0 0 422.4v25.6A64 64 0 0 0 64 512h320a64 64 0 0 0 64-64v-25.6A134.4 134.4 0 0 0 313.6 288z"/></svg>';
+        document.head.appendChild(favicon);
         const token = localStorage.getItem('token');
         if (!token) {
             alert("You need to be logged in to view this page.");
@@ -43,7 +51,7 @@ const Users = () => {
     }, [navigate]);
 
     // Filter users based on search input, active status, and admin status
-    const applyFilters = () => {
+    const applyFilters = useCallback(() => {
         let filtered = [...users];
 
         if (filterActive !== 'all') {
@@ -63,11 +71,11 @@ const Users = () => {
         }
 
         setFilteredUsers(filtered);
-    };
+    }, [users, filterActive, filterAdmin, searchText]);
 
     useEffect(() => {
         applyFilters();
-    }, [searchText, filterActive, filterAdmin, users]);
+    }, [applyFilters]);
 
     const handleSearchChange = (event) => {
         setSearchText(event.target.value);

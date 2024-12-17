@@ -16,6 +16,8 @@ Docker of this project - https://hub.docker.com/r/maxim3003/mainproject
 - **Category Management**: Admins can add, view, and edit video categories.
 - **Responsive Design**: The app is designed to be user-friendly and responsive across devices.
 - **Admin Privileges**: Admins can see all videos, approved, unapproved and denied videos, in a sense they are choosing what normal users are allowed to see on the website
+- **Trending From YouTube**: Takes trending videos from Youtube every day
+- **Recommended**: Simple algorithm to suggest videos to users
 
 ## Technologies Used
 
@@ -23,11 +25,6 @@ Docker of this project - https://hub.docker.com/r/maxim3003/mainproject
 - **Backend**: Django, Django REST Framework
 - **Database**: PostgreSQL/MySQL
 - **API**: YouTube oEmbed API for fetching video details
+- **HuggingFace AI**: Uses AI to categorize videos from youtube and fix their description
 
-### Prerequisites
 
-- Node.js (v14 or later)
-- Python (v3.8 or later)
-- Django (v3.2 or later)
-- PostgreSQL or MySQL
-- Git

@@ -27,4 +27,5 @@ Docker of this project - https://hub.docker.com/r/maxim3003/mainproject
 - **API**: YouTube oEmbed API for fetching video details
 - **HuggingFace AI**: Uses AI to categorize videos from youtube and fix their description
 
+IMPORTANT - The youtube and hugginface API keys should be in a .env file in the backend root file, those are personal.
 
